@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { Message } from 'types/api';
 import axios from 'axios';
-import useSWR, { useSWRConfig } from 'swr';
 
 import useFetMessage from 'hooks/useFetchMessages';
 import SendIcon from './SendIcon';
@@ -9,9 +8,6 @@ import SendIcon from './SendIcon';
 export interface ChatBoxProps {
   accountId: string;
 }
-
-const fetchMessages = async (url: string) => await axios.get(url).then((res) => res.data);
-const addNewMessage = async (url: string, text: string) => await axios.post(url, { text }).then((res) => res.data);
 
 const getUserStyles = (isSender: boolean) => {
   return isSender ? 'text-green-600 border-green-600' : 'text-purple-500 border-purple-500';
@@ -21,56 +17,49 @@ function ChatBox({ accountId }: ChatBoxProps) {
   const [text, setText] = React.useState<string>('');
   const [isScolledTop, setIsScolledTop] = React.useState(false);
 
-  // const { mutate } = useSWRConfig();
-  // const { data, error: isError } = useSWR(`/api/account/${accountId}/conversation/1/messages`, fetchMessages);
-
   const observer = React.useRef<any>();
 
-  const { messages, setMessages, cursorPrev, setCursor, isError, isLoading } = useFetMessage(
+  const { messages, setMessages, cursorRequest, setCursor, hasMore, isError, isLoading } = useFetMessage(
     10,
     accountId,
     '1'
-    // cursor,
-    // setCursor
-    // isScolledTop
   );
 
-  React.useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY == 0) {
-        setIsScolledTop(true);
-        // setCursor(cursorPrev);
-      }
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => removeEventListener('scroll', handleScroll);
-  }, []);
+  // React.useEffect(() => {
+  //   const handleScroll = () => {
+  //     if (window.scrollY == 0) {
+  //       console.log('scroll :>> ', cursorRequest);
+  //       // setCursor(cursorRequest);
+  //       setIsScolledTop(true);
+  //     }
+  //   };
 
-  // 1: eyJsYXN0U2VlbiI6IjE4MjUiLCJzb3J0IjoiT0xERVNUX0ZJUlNUIn0=
-  // 2: eyJsYXN0U2VlbiI6IjE4MjQiLCJzb3J0IjoiTkVXRVNUX0ZJUlNUIn0=
-  // 3: eyJsYXN0U2VlbiI6IjE4MjciLCJzb3J0IjoiT0xERVNUX0ZJUlNUIn0=
+  //   window.addEventListener('scroll', handleScroll);
+  //   return () => removeEventListener('scroll', handleScroll);
+  // }, []);
 
   // Ref to track the last message element
   const lastMessageRef = React.useRef<HTMLDivElement>(null);
 
-  // Effect run when new message came. It will auto scroll to bottom
-  React.useEffect(() => {
-    lastMessageRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  // Effect run when user start typing. It will auto scroll to bottom
+  // React.useEffect(() => {
+  //   lastMessageRef.current?.scrollIntoView();
+  // }, [text]);
 
-  // const firstMessageElementRef = React.useCallback(
-  //   (node: any) => {
-  //     if (isLoading) return;
-  //     if (observer.current) observer.current.disconnect();
-  //     observer.current = new IntersectionObserver((entries) => {
-  //       if (entries[0].isIntersecting && isScolledTop) {
-  //         console.log('entries :>> ', entries);
-  //       }
-  //     });
-  //     if (node) observer.current.observe(node);
-  //   },
-  //   [isLoading]
-  // );
+  const firstMessageElementRef = React.useCallback(
+    (node: any) => {
+      if (isLoading) return;
+      if (observer.current) observer.current.disconnect();
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting) {
+          console.log('found node :>> ', entries);
+          // setCursor(cursorRequest);
+        }
+      });
+      if (node) observer.current.observe(node);
+    },
+    [isLoading, hasMore]
+  );
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => setText(e.target.value);
 
@@ -81,35 +70,30 @@ function ChatBox({ accountId }: ChatBoxProps) {
 
     try {
       const address = '/api/account/1/conversation/1/messages';
-      const response = await axios.post(address, { text });
-      // const newMessage = await addNewMessage(address, text);
-
-      // await mutate(addNewMessage(address, text), {
-      //   optimisticData: {
-      //     rows: [newMessage, ...data.rows],
-      //   },
-      //   rollbackOnError: true,
-      // });
+      const newMessage = await axios.post(address, { text });
 
       setText('');
 
-      // console.log('res :>> ', res);
-      setMessages((prev) => [...prev, response.data]);
+      setMessages((prev) => [...prev, newMessage.data]);
+      lastMessageRef.current?.scroll()
+      console.log('lastMessageRef.current :>> ', lastMessageRef.current);
     } catch (e) {
       console.error(e);
     }
   };
 
-  if (isError) return <div>{isError}</div>;
-  if (!messages || isLoading) return <div>Loading...</div>;
+  const handleLoadMore = () => {
+    if (!hasMore) return;
 
-  // const messages = data.rows;
-
-  console.log('messages :>> ', messages);
+    setCursor(cursorRequest);
+  };
 
   return (
     <div className="relative w-full flex flex-col justify-between p-4">
-      <div className="flex flex-col gap-y-2 pb-20 z-0">
+      <div className="flex flex-col gap-y-4 pb-16 z-0">
+        {isError && <p className="text-center">Load message failed</p>}
+        {isLoading && <p>Loading...</p>}
+
         {messages.map((message: Message, index: number) => {
           // Check if the last message element
           const isSender = message.sender.id.toString() === accountId;
@@ -117,24 +101,26 @@ function ChatBox({ accountId }: ChatBoxProps) {
           if (index === 0) {
             return (
               <div
-                // ref={firstMessageElementRef}
+                ref={firstMessageElementRef}
                 key={message.id}
                 className={`w-full flex items-center ${isSender ? 'justify-end' : ''}`}
               >
-                <p className={`msg ${getUserStyles(isSender)}`}>First message - {message.text}</p>
+                <p className={`msg ${getUserStyles(isSender)}`}>Oldest message - {message.text}</p>
               </div>
             );
-          } else if (messages.length === index + 1) {
-            return (
-              <div
-                ref={lastMessageRef}
-                key={message.id}
-                className={`w-full flex items-center ${isSender ? 'justify-end' : ''}`}
-              >
-                <p className={`msg ${getUserStyles(isSender)}`}>{message.text}</p>
-              </div>
-            );
-          } else {
+          }
+          // else if (messages.length === index + 1) {
+          //   return (
+          //     <div
+          //       // ref={lastMessageRef}
+          //       key={message.id}
+          //       className={`w-full flex items-center ${isSender ? 'justify-end' : ''}`}
+          //     >
+          //       <p className={`msg ${getUserStyles(isSender)}`}>{message.text}</p>
+          //     </div>
+          //   );
+          // }
+          else {
             return (
               <div key={message.id} className={`w-full flex items-center ${isSender ? 'justify-end' : ''}`}>
                 <p className={`msg ${getUserStyles(isSender)}`}>{message.text}</p>
@@ -142,6 +128,7 @@ function ChatBox({ accountId }: ChatBoxProps) {
             );
           }
         })}
+        <div ref={lastMessageRef} />
       </div>
 
       <form className="fixed bottom-0 right-0 w-full bg-slate-200 p-4 z-99" onSubmit={handleSubmit}>
@@ -153,7 +140,7 @@ function ChatBox({ accountId }: ChatBoxProps) {
           onChange={handleChange}
           value={text}
         />
-        <SendIcon onClick={() => setCursor(cursorPrev)} />
+        <SendIcon onClick={handleLoadMore} />
       </form>
     </div>
   );
