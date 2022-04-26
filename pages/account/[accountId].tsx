@@ -1,5 +1,5 @@
 import ChatBox from 'components/ChatBox';
-import { NextPage, NextPageContext } from 'next';
+import { NextPageContext } from 'next';
 import * as React from 'react';
 import { useRouter } from 'next/router';
 import isNil from 'lodash/fp/isNil';
@@ -18,10 +18,14 @@ function Account({ className, converstations }: AccountProps) {
 
   const participants: User[] = filter(({ id }: User) => id !== accountId)(converstations[0].participants);
 
+  const conversationId = converstations[0].id;
+
   const isRouteReady = typeof accountId === 'string' && !isNil(accountId);
 
   return (
-    <div className={className}>{isRouteReady && <ChatBox participants={participants} accountId={accountId} />}</div>
+    <div className={className}>
+      {isRouteReady && <ChatBox participants={participants} accountId={accountId} conversationId={conversationId} />}
+    </div>
   );
 }
 

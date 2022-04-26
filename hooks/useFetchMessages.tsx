@@ -4,7 +4,6 @@ import { Message } from 'types/api';
 import sortBy from 'lodash/fp/sortBy';
 import flow from 'lodash/fp/flow';
 import filter from 'lodash/fp/filter';
-import delay from 'lodash/fp/delay';
 
 export default function useFetMessage(pageSize: number, accountId: string, converstationId: string) {
   const [messages, setMessages] = React.useState<Message[]>([]);

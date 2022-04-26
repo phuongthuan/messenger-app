@@ -6,28 +6,28 @@ import useFetMessage from 'hooks/useFetchMessages';
 import useEventListener from 'hooks/useEventListener';
 
 import SendIcon from './SendIcon';
+import SingleMessage from './SingleMessage';
 
 export interface ChatBoxProps {
   accountId: string;
+  conversationId: string;
   participants: User[];
 }
 
-const getUserStyles = (isSender: boolean) => {
-  return isSender ? 'bg-indigo-500' : 'bg-purple-400';
-};
-
-function ChatBox({ accountId, participants }: ChatBoxProps) {
+function ChatBox({ accountId, conversationId, participants }: ChatBoxProps) {
   const [text, setText] = React.useState<string>('');
   const [pageSize, setPageSize] = React.useState(20);
 
   const { messages, setMessages, cursorRequest, setCursor, hasMore, isError, isLoading } = useFetMessage(
     pageSize,
     accountId,
-    '1'
+    conversationId
   );
 
   // Ref to track the last message element
   const scrollMessageRef = React.useRef<HTMLDivElement>(null);
+
+  const lastMessageRef = React.useRef<HTMLDivElement>(null);
 
   // const observer = React.useRef<any>();
 
@@ -81,13 +81,14 @@ function ChatBox({ accountId, participants }: ChatBoxProps) {
     if (!text) return;
 
     try {
-      const address = '/api/account/1/conversation/1/messages';
-      const newMessage = await axios.post(address, { text });
+      const newMessage = await axios.post(`/api/account/${accountId}/conversation/${conversationId}/messages`, {
+        text,
+      });
 
       setText('');
 
       setMessages((prev) => [...prev, newMessage.data]);
-      scrollMessageRef.current?.scrollIntoView();
+      lastMessageRef.current?.scrollIntoView();
     } catch (e) {
       console.error(e);
     }
@@ -97,7 +98,7 @@ function ChatBox({ accountId, participants }: ChatBoxProps) {
     if (!hasMore) return;
 
     setCursor(cursorRequest);
-    setPageSize(5);
+    setPageSize(4);
   };
 
   return (
@@ -109,50 +110,18 @@ function ChatBox({ accountId, participants }: ChatBoxProps) {
       </div>
 
       <div className="flex flex-col gap-y-4 mb-20 z-0 text-center mt-16 p-4">
-        {messages.map((message: Message, index: number) => {
+        {messages.map((message: Message, index: number) => (
+          <React.Fragment key={message.id}>
+            <SingleMessage
+              isSender={message.sender.id.toString() === accountId}
+              index={index}
+              message={message}
+              ref={scrollMessageRef}
+            />
+          </React.Fragment>
+        ))}
 
-          const isSender = message.sender.id.toString() === accountId;
-
-          if (index === 0) {
-            return (
-              <div
-                // ref={firstMessageElementRef}
-                key={message.id}
-                className={`w-full flex items-center ${isSender ? 'justify-end' : ''}`}
-              >
-                <p className={`msg ${getUserStyles(isSender)}`}>Oldest message - {message.text}</p>
-              </div>
-            );
-          } else if (index === 2) {
-            return (
-              <div
-                ref={scrollMessageRef}
-                key={message.id}
-                className={`w-full flex items-center ${isSender ? 'justify-end' : ''}`}
-              >
-                <p className={`msg ${getUserStyles(isSender)}`}>Scroll message - {message.text}</p>
-              </div>
-            );
-          }
-          // else if (messages.length === index + 1) {
-          //   return (
-          //     <div
-          //       // ref={lastMessageRef}
-          //       key={message.id}
-          //       className={`w-full flex items-center ${isSender ? 'justify-end' : ''}`}
-          //     >
-          //       <p className={`msg ${getUserStyles(isSender)}`}>{message.text}</p>
-          //     </div>
-          //   );
-          // }
-          else {
-            return (
-              <div key={message.id} className={`w-full flex items-center ${isSender ? 'justify-end' : ''}`}>
-                <p className={`msg ${getUserStyles(isSender)}`}>{message.text}</p>
-              </div>
-            );
-          }
-        })}
+        <div ref={lastMessageRef} />
       </div>
 
       <form className="fixed bottom-0 right-0 w-full bg-slate-200 p-4 z-10" onSubmit={handleSubmit}>
