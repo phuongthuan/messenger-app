@@ -1,29 +1,35 @@
 import * as React from 'react';
-import { Message } from 'types/api';
+import { Message, User } from 'types/api';
 import axios from 'axios';
 
 import useFetMessage from 'hooks/useFetchMessages';
-import SendIcon from './SendIcon';
 import useEventListener from 'hooks/useEventListener';
+
+import SendIcon from './SendIcon';
 
 export interface ChatBoxProps {
   accountId: string;
+  participants: User[];
 }
 
 const getUserStyles = (isSender: boolean) => {
   return isSender ? 'bg-indigo-500' : 'bg-purple-400';
 };
 
-function ChatBox({ accountId }: ChatBoxProps) {
+function ChatBox({ accountId, participants }: ChatBoxProps) {
   const [text, setText] = React.useState<string>('');
-
-  // const observer = React.useRef<any>();
+  const [pageSize, setPageSize] = React.useState(20);
 
   const { messages, setMessages, cursorRequest, setCursor, hasMore, isError, isLoading } = useFetMessage(
-    20,
+    pageSize,
     accountId,
     '1'
   );
+
+  // Ref to track the last message element
+  const scrollMessageRef = React.useRef<HTMLDivElement>(null);
+
+  // const observer = React.useRef<any>();
 
   // Scroll to top to get older message
   useEventListener('scroll', () => {
@@ -45,13 +51,10 @@ function ChatBox({ accountId }: ChatBoxProps) {
   //   return () => removeEventListener('scroll', handleScroll);
   // }, []);
 
-  // Ref to track the last message element
-  const lastMessageRef = React.useRef<HTMLDivElement>(null);
-
-  // Effect run when user start typing. It will auto scroll to bottom
-  // React.useEffect(() => {
-  //   lastMessageRef.current?.scrollIntoView();
-  // }, [text]);
+  // Effect run when new message came. It will auto scroll to bottom
+  React.useEffect(() => {
+    scrollMessageRef.current?.scrollIntoView();
+  }, [messages]);
 
   // const firstMessageElementRef = React.useCallback(
   //   (node: any) => {
@@ -59,8 +62,10 @@ function ChatBox({ accountId }: ChatBoxProps) {
   //     if (observer.current) observer.current.disconnect();
   //     observer.current = new IntersectionObserver((entries) => {
   //       if (entries[0].isIntersecting) {
-  //         console.log('found node :>> ', entries);
-  //         // setCursor(cursorRequest);
+  //         console.log('node :>> ', node);
+  //         // // setCursor(cursorRequest);
+  //         // handleLoadMore();
+  //         // setIsScrolledTop(false);
   //       }
   //     });
   //     if (node) observer.current.observe(node);
@@ -71,7 +76,6 @@ function ChatBox({ accountId }: ChatBoxProps) {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => setText(e.target.value);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    console.log('render handleSubmit');
     e.preventDefault();
 
     if (!text) return;
@@ -83,7 +87,7 @@ function ChatBox({ accountId }: ChatBoxProps) {
       setText('');
 
       setMessages((prev) => [...prev, newMessage.data]);
-      lastMessageRef.current?.scrollIntoView();
+      scrollMessageRef.current?.scrollIntoView();
     } catch (e) {
       console.error(e);
     }
@@ -93,16 +97,20 @@ function ChatBox({ accountId }: ChatBoxProps) {
     if (!hasMore) return;
 
     setCursor(cursorRequest);
+    setPageSize(5);
   };
 
   return (
-    <div className="relative w-full flex flex-col justify-between p-4">
-      <div className="flex flex-col gap-y-4 pb-16 z-0 text-center">
+    <div className="relative w-full flex flex-col justify-between">
+      <div className="fixed w-full text-center p-4 bg-slate-200 z-10 flex flex-col items-center">
+        <p className="text-sm">Converstation between You and {participants.map((p) => p.name).join(',')}</p>
+        {isLoading ? <p className="text-sm mt-2 text-indigo-500">Loading...</p> : null}
         {isError && <p className="text-sm text-red-500">Load message failed</p>}
-        {isLoading && <p className="text-sm text-indigo-500">Loading...</p>}
+      </div>
 
+      <div className="flex flex-col gap-y-4 mb-20 z-0 text-center mt-16 p-4">
         {messages.map((message: Message, index: number) => {
-          // Check if the last message element
+
           const isSender = message.sender.id.toString() === accountId;
 
           if (index === 0) {
@@ -113,6 +121,16 @@ function ChatBox({ accountId }: ChatBoxProps) {
                 className={`w-full flex items-center ${isSender ? 'justify-end' : ''}`}
               >
                 <p className={`msg ${getUserStyles(isSender)}`}>Oldest message - {message.text}</p>
+              </div>
+            );
+          } else if (index === 2) {
+            return (
+              <div
+                ref={scrollMessageRef}
+                key={message.id}
+                className={`w-full flex items-center ${isSender ? 'justify-end' : ''}`}
+              >
+                <p className={`msg ${getUserStyles(isSender)}`}>Scroll message - {message.text}</p>
               </div>
             );
           }
@@ -135,10 +153,9 @@ function ChatBox({ accountId }: ChatBoxProps) {
             );
           }
         })}
-        <div ref={lastMessageRef} />
       </div>
 
-      <form className="fixed bottom-0 right-0 w-full bg-slate-200 p-4 z-99" onSubmit={handleSubmit}>
+      <form className="fixed bottom-0 right-0 w-full bg-slate-200 p-4 z-10" onSubmit={handleSubmit}>
         <input
           name="text-input"
           className="border rounded-full px-4 py-1 border-indigo-500 focus:border-indigo-500 focus:outline-none text-sm w-full"
