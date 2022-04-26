@@ -44,8 +44,6 @@ export default withDefaultDb(
         return;
       }
 
-      console.log(data);
-
       const { id } = data[0];
       const conversation = await readConversation(id);
       res.status(200).json(conversation);
