@@ -2,12 +2,10 @@ import axios from 'axios';
 import React from 'react';
 import { Message } from 'types/api';
 import sortBy from 'lodash/fp/sortBy';
+import flow from 'lodash/fp/flow';
+import reject from 'lodash/fp/reject';
 
-export default function useFetMessage(
-  pageSize: number,
-  accountId: string,
-  converstationId: string
-) {
+export default function useFetMessage(pageSize: number, accountId: string, converstationId: string) {
   const [messages, setMessages] = React.useState<Message[]>([]);
   const [isError, setError] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(true);
@@ -25,7 +23,7 @@ export default function useFetMessage(
         });
 
         const isNewestFirst = response.data.sort === 'NEWEST_FIRST';
-        const newMessages: any = sortBy('id')(response.data.rows);
+        const newMessages: any = flow(reject(['text', null]), sortBy('id'))(response.data.rows);
 
         if (isNewestFirst) {
           setCursorRequest(response.data.cursor_prev);

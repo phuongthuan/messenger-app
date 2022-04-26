@@ -4,6 +4,6 @@
 
 @layer components {
   .msg {
-    @apply rounded-full border border-2 px-6 py-1 w-fit font-light text-sm;
+    @apply rounded-full text-white px-6 py-1 w-fit font-light text-sm;
   }
 }

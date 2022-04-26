@@ -8,7 +8,7 @@ function SendIcon({ onClick }: SendIconProps) {
   return (
     <div className="rotate-90 absolute right-6 bottom-6 cursor-pointer" onClick={onClick}>
       <svg
-        className="w-4 h-4 stroke-green-600"
+        className="w-4 h-4 stroke-indigo-500"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"

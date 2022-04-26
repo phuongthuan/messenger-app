@@ -4,31 +4,38 @@ import axios from 'axios';
 
 import useFetMessage from 'hooks/useFetchMessages';
 import SendIcon from './SendIcon';
+import useEventListener from 'hooks/useEventListener';
 
 export interface ChatBoxProps {
   accountId: string;
 }
 
 const getUserStyles = (isSender: boolean) => {
-  return isSender ? 'text-green-600 border-green-600' : 'text-purple-500 border-purple-500';
+  return isSender ? 'bg-indigo-500' : 'bg-purple-400';
 };
 
 function ChatBox({ accountId }: ChatBoxProps) {
   const [text, setText] = React.useState<string>('');
-  const [isScolledTop, setIsScolledTop] = React.useState(false);
 
-  const observer = React.useRef<any>();
+  // const observer = React.useRef<any>();
 
   const { messages, setMessages, cursorRequest, setCursor, hasMore, isError, isLoading } = useFetMessage(
-    10,
+    20,
     accountId,
     '1'
   );
 
+  // Scroll to top to get older message
+  useEventListener('scroll', () => {
+    if (window.scrollY == 0) {
+      handleLoadMore();
+    }
+  });
+
   // React.useEffect(() => {
   //   const handleScroll = () => {
-  //     if (window.scrollY == 0) {
-  //       console.log('scroll :>> ', cursorRequest);
+  //     if (window.pageYOffset == 0) {
+  //       // console.log('scroll :>> ', cursorRequest);
   //       // setCursor(cursorRequest);
   //       setIsScolledTop(true);
   //     }
@@ -46,24 +53,25 @@ function ChatBox({ accountId }: ChatBoxProps) {
   //   lastMessageRef.current?.scrollIntoView();
   // }, [text]);
 
-  const firstMessageElementRef = React.useCallback(
-    (node: any) => {
-      if (isLoading) return;
-      if (observer.current) observer.current.disconnect();
-      observer.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting) {
-          console.log('found node :>> ', entries);
-          // setCursor(cursorRequest);
-        }
-      });
-      if (node) observer.current.observe(node);
-    },
-    [isLoading, hasMore]
-  );
+  // const firstMessageElementRef = React.useCallback(
+  //   (node: any) => {
+  //     if (isLoading) return;
+  //     if (observer.current) observer.current.disconnect();
+  //     observer.current = new IntersectionObserver((entries) => {
+  //       if (entries[0].isIntersecting) {
+  //         console.log('found node :>> ', entries);
+  //         // setCursor(cursorRequest);
+  //       }
+  //     });
+  //     if (node) observer.current.observe(node);
+  //   },
+  //   [isLoading, hasMore]
+  // );
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => setText(e.target.value);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    console.log('render handleSubmit');
     e.preventDefault();
 
     if (!text) return;
@@ -75,8 +83,7 @@ function ChatBox({ accountId }: ChatBoxProps) {
       setText('');
 
       setMessages((prev) => [...prev, newMessage.data]);
-      lastMessageRef.current?.scroll()
-      console.log('lastMessageRef.current :>> ', lastMessageRef.current);
+      lastMessageRef.current?.scrollIntoView();
     } catch (e) {
       console.error(e);
     }
@@ -90,9 +97,9 @@ function ChatBox({ accountId }: ChatBoxProps) {
 
   return (
     <div className="relative w-full flex flex-col justify-between p-4">
-      <div className="flex flex-col gap-y-4 pb-16 z-0">
-        {isError && <p className="text-center">Load message failed</p>}
-        {isLoading && <p>Loading...</p>}
+      <div className="flex flex-col gap-y-4 pb-16 z-0 text-center">
+        {isError && <p className="text-sm text-red-500">Load message failed</p>}
+        {isLoading && <p className="text-sm text-indigo-500">Loading...</p>}
 
         {messages.map((message: Message, index: number) => {
           // Check if the last message element
@@ -101,7 +108,7 @@ function ChatBox({ accountId }: ChatBoxProps) {
           if (index === 0) {
             return (
               <div
-                ref={firstMessageElementRef}
+                // ref={firstMessageElementRef}
                 key={message.id}
                 className={`w-full flex items-center ${isSender ? 'justify-end' : ''}`}
               >
@@ -134,7 +141,7 @@ function ChatBox({ accountId }: ChatBoxProps) {
       <form className="fixed bottom-0 right-0 w-full bg-slate-200 p-4 z-99" onSubmit={handleSubmit}>
         <input
           name="text-input"
-          className="border-2 rounded-full px-4 py-1 border-green-600 focus:border-green-600 focus:outline-none text-sm w-full"
+          className="border rounded-full px-4 py-1 border-indigo-500 focus:border-indigo-500 focus:outline-none text-sm w-full"
           type="text"
           placeholder="type your messages"
           onChange={handleChange}
