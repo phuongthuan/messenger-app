@@ -11,7 +11,6 @@ npm run dev
 ```
 
 ```
-
 ## Run as production server
 npm run build
 npm start
