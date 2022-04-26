@@ -6,6 +6,8 @@ Requirements: Node.js version 16+
 
 ```
 npm i
+cp env.local.example env.local
+npm run dev
 ```
 
 ```
