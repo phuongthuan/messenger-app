@@ -21,7 +21,7 @@ const SingleMessage = React.forwardRef<HTMLDivElement, SingleMessageProps>(({ is
         <p className={`msg ${getUserStyles(isSender)}`}>Oldest message - {message.text}</p>
       </div>
     );
-  } else if (index === 3) {
+  } else if (index === 5) {
     return (
       <div ref={ref} className={`w-full flex items-center ${isSender ? 'justify-end' : ''}`}>
         <p className={`msg ${getUserStyles(isSender)}`}>Scroll message - {message.text}</p>

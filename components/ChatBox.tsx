@@ -105,10 +105,14 @@ function ChatBox({ accountId, conversationId, participants }: ChatBoxProps) {
   };
 
   return (
-    <div className="relative w-full flex flex-col justify-between z-50">
-      <div className="fixed w-full text-center p-4 bg-slate-200 z-10 flex flex-col items-center">
-        <p className="text-sm text-center">Converstation between You and {participants.map((p) => p.name).join(',')}</p>
-        {isLoading ? <p className="text-sm mt-2 text-indigo-500">Loading...</p> : null}
+    <div className="relative flex flex-col justify-between z-50">
+      <div className="fixed w-2/3 text-center z-10 flex flex-col items-center">
+        <div className="bg-violet-200 w-full flex flex-col justify-center h-12">
+          <p className="text-sm text-center">
+            Converstation between You and {participants.map((p) => p.name).join(',')}
+          </p>
+        </div>
+        {isLoading ? <p className="text-sm mt-4 text-indigo-500">Loading...</p> : null}
         {isError && <p className="text-sm text-red-500">Load message failed</p>}
       </div>
 
@@ -127,7 +131,7 @@ function ChatBox({ accountId, conversationId, participants }: ChatBoxProps) {
         <div ref={lastMessageRef} />
       </div>
 
-      <form className="fixed bottom-0 right-0 w-full bg-slate-200 p-4 z-10" onSubmit={handleSubmit}>
+      <form className="fixed bottom-0 w-2/3 bg-slate-200 p-4 z-10" onSubmit={handleSubmit}>
         <input
           name="text-input"
           className="border rounded-full px-4 py-1 border-indigo-500 focus:border-indigo-500 focus:outline-none text-sm w-full"
