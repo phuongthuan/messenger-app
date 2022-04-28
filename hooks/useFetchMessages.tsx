@@ -5,7 +5,7 @@ import sortBy from 'lodash/fp/sortBy';
 import flow from 'lodash/fp/flow';
 import filter from 'lodash/fp/filter';
 
-export default function useFetMessage(pageSize: number, accountId: string, converstationId: string) {
+export default function useFetchMessage(pageSize: number, accountId: string, converstationId: string) {
   const [messages, setMessages] = React.useState<Message[]>([]);
   const [isError, setError] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(true);
@@ -18,7 +18,7 @@ export default function useFetMessage(pageSize: number, accountId: string, conve
       setIsLoading(true);
       setError(false);
       try {
-        const response = await axios.get(`/api/account/${accountId}/conversation/${converstationId}/messages`, {
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/account/${accountId}/conversation/${converstationId}/messages`, {
           params: { pageSize, cursor },
         });
 

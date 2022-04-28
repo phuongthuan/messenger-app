@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Message, User } from 'types/api';
 import axios from 'axios';
 
-import useFetMessage from 'hooks/useFetchMessages';
+import useFetchMessage from 'hooks/useFetchMessages';
 import useEventListener from 'hooks/useEventListener';
 
 import SendIcon from './SendIcon';
@@ -18,7 +18,7 @@ function ChatBox({ accountId, conversationId, participants }: ChatBoxProps) {
   const [text, setText] = React.useState<string>('');
   const [pageSize, setPageSize] = React.useState(20);
 
-  const { messages, setMessages, cursorRequest, setCursor, hasMore, isError, isLoading } = useFetMessage(
+  const { messages, setMessages, cursorRequest, setCursor, hasMore, isError, isLoading } = useFetchMessage(
     pageSize,
     accountId,
     conversationId
@@ -81,9 +81,12 @@ function ChatBox({ accountId, conversationId, participants }: ChatBoxProps) {
     if (!text) return;
 
     try {
-      const newMessage = await axios.post(`/api/account/${accountId}/conversation/${conversationId}/messages`, {
-        text,
-      });
+      const newMessage = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/account/${accountId}/conversation/${conversationId}/messages`,
+        {
+          text,
+        }
+      );
 
       setText('');
 
@@ -102,9 +105,9 @@ function ChatBox({ accountId, conversationId, participants }: ChatBoxProps) {
   };
 
   return (
-    <div className="relative w-full flex flex-col justify-between">
+    <div className="relative w-full flex flex-col justify-between z-50">
       <div className="fixed w-full text-center p-4 bg-slate-200 z-10 flex flex-col items-center">
-        <p className="text-sm">Converstation between You and {participants.map((p) => p.name).join(',')}</p>
+        <p className="text-sm text-center">Converstation between You and {participants.map((p) => p.name).join(',')}</p>
         {isLoading ? <p className="text-sm mt-2 text-indigo-500">Loading...</p> : null}
         {isError && <p className="text-sm text-red-500">Load message failed</p>}
       </div>
