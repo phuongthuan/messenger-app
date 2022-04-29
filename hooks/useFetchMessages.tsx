@@ -4,8 +4,14 @@ import { Message } from 'types/api';
 import sortBy from 'lodash/fp/sortBy';
 import flow from 'lodash/fp/flow';
 import filter from 'lodash/fp/filter';
+import uniqBy from 'lodash/fp/uniqBy';
 
-export default function useFetchMessage(pageSize: number, accountId: string, converstationId: string) {
+export default function useFetchMessage(
+  pageSize: number,
+  accountId: string,
+  converstationId: string,
+  handleScrollAfterLoadMessage: () => void
+) {
   const [messages, setMessages] = React.useState<Message[]>([]);
   const [isError, setError] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(true);
@@ -18,14 +24,18 @@ export default function useFetchMessage(pageSize: number, accountId: string, con
       setIsLoading(true);
       setError(false);
       try {
-        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/account/${accountId}/conversation/${converstationId}/messages`, {
-          params: { pageSize, cursor },
-        });
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/account/${accountId}/conversation/${converstationId}/messages`,
+          {
+            params: { pageSize, cursor },
+          }
+        );
 
         const isNewestFirst = response.data.sort === 'NEWEST_FIRST';
 
-        const newMessages: any = flow(
+        const newMessages: Message[] = flow(
           filter(({ text }) => text),
+          uniqBy('id'),
           sortBy('id')
         )(response.data.rows);
 
@@ -37,6 +47,8 @@ export default function useFetchMessage(pageSize: number, accountId: string, con
 
         setMessages((prevMessages) => [...newMessages, ...prevMessages]);
 
+        console.log('trigger event');
+        handleScrollAfterLoadMessage();
         setHasMore(response.data.rows.length > 0);
         setIsLoading(false);
       } catch (error: any) {

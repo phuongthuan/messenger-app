@@ -1,3 +1,4 @@
+import UserAvatar from 'components/UserAvatar';
 import type { NextPage } from 'next';
 import { useRouter } from 'next/router';
 
@@ -24,10 +25,7 @@ const Home: NextPage<{ accounts: AccountProps[] }> = ({ accounts }) => {
               className="cursor-pointer p-5 border-solid border-gray-800 border-2 mt-5 mb-5 rounded flex"
               onClick={() => handleClick(account.id)}
             >
-              <img
-                src="https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png"
-                className="w-7 h-7 border-2 rounded-full"
-              />
+              <UserAvatar />
               <p className="ml-5">{account.name}</p>
             </li>
           ))}

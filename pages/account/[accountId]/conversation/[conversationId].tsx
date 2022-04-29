@@ -13,7 +13,7 @@ interface AccountProps {
   converstation: Conversation;
 }
 
-function Account({ className, converstation }: AccountProps) {
+function Account({ converstation }: AccountProps) {
   const router = useRouter();
   const { accountId, conversationId } = router.query;
 
@@ -22,7 +22,7 @@ function Account({ className, converstation }: AccountProps) {
   const isRouteReady = typeof accountId === 'string' && !isNil(accountId);
 
   return (
-    <div className={className}>
+    <div>
       {isRouteReady && typeof conversationId === 'string' && (
         <ChatBox participants={participants} accountId={accountId} conversationId={conversationId} />
       )}

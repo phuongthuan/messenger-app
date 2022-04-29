@@ -2,6 +2,7 @@ import React from 'react';
 import useSWR from 'swr';
 import { format } from 'date-fns';
 import { useRouter } from 'next/router';
+import UserAvatar from './UserAvatar';
 
 type Account = { id: string; name: string };
 type Conversation = {
@@ -48,7 +49,6 @@ const SearchBar: React.FC<{ value: string; setValue: (value: string) => void }> 
           text-gray-700
           bg-white bg-clip-padding
           border border-solid border-gray-300
-          rounded
           transition
           ease-in-out
           m-0
@@ -78,10 +78,7 @@ const Conversation: React.FC<{ conversation: Conversation }> = ({ conversation }
       }`}
     >
       <div className="place-self-center">
-        <img
-          src="https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png"
-          className="w-7 h-7 border-2 rounded-full"
-        />
+        <UserAvatar />
       </div>
       <div className="flex-1">
         <div className="font-semi-bold">{participant.name}</div>
@@ -140,10 +137,10 @@ const SidebarLayout: React.FC<{ children: React.ReactElement }> = ({ children })
 
   return accountId && conversationId ? (
     <div className="h-screen w-screen flex flex-row flex-wrap relative">
-      <aside className="h-full w-full sm:w-1/3 md:w-1/3 border border-solid border-gray-300">
+      <aside className="h-full w-1/3 sm:w-1/3 md:w-1/3 border border-solid border-gray-300">
         <Sidebar conversations={data?.rows ?? []} />
       </aside>
-      <main role="main" className="relative max-h-screen sm:w-2/3 md:w-2/3 overflow-auto">
+      <main role="main" className="relative right-0 w-2/3 sm:w-2/3 md:w-2/3">
         {children}
       </main>
     </div>
