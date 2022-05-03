@@ -47,7 +47,6 @@ export default function useFetchMessage(
 
         setMessages((prevMessages) => [...newMessages, ...prevMessages]);
 
-        console.log('trigger event');
         handleScrollAfterLoadMessage();
         setHasMore(response.data.rows.length > 0);
         setIsLoading(false);

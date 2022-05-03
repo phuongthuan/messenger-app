@@ -136,7 +136,7 @@ const SidebarLayout: React.FC<{ children: React.ReactElement }> = ({ children })
   }, [data, accountId, router, conversationId]);
 
   return accountId && conversationId ? (
-    <div className="h-screen w-screen flex flex-wrap flex-row relative">
+    <div className="h-screen flex flex-wrap flex-row relative">
       <aside className="h-full hidden w-full sm:inline-block sm:w-1/3 md:w-1/3 sm:fixed border border-solid border-gray-300">
         <Sidebar conversations={data?.rows ?? []} />
       </aside>

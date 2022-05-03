@@ -91,14 +91,14 @@ function ChatBox({ accountId, conversationId, participants }: ChatBoxProps) {
             Converstation between You and {participants.map((p) => p.name).join(',')}
           </p>
         </div>
-        {isLoading ? <Spinner className="mt-4" /> : null}
+        {isLoading ? <Spinner className="mt-4 mb-2" /> : null}
         {isError && <p className="text-sm text-red-500">Load message failed</p>}
         {!hasMore && !isLoading && (
           <p className="text-sm py-2 bg-white z-10 w-full text-indigo-500">No more messages to load</p>
         )}
       </div>
 
-      <div className="flex flex-col overflow-y-auto gap-y-4 mb-20 z-0 text-center mt-20 p-4">
+      <div className="flex flex-col overflow-y-auto gap-y-4 mb-20 z-0 text-center mt-20 p-2">
         {messages.map((message: Message, index: number) => (
           <React.Fragment key={message.id}>
             <SingleMessage
