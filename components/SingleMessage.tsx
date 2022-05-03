@@ -22,7 +22,7 @@ const SingleMessage = React.forwardRef<HTMLDivElement, SingleMessageProps>(({ is
   if (index === 5) {
     return (
       <div ref={ref} className={`w-full flex items-center ${isSender ? 'justify-end' : ''}`}>
-        <p className={`msg ${isSender ? 'bg-indigo-500' : 'bg-purple-400'}`}>Scroll message - {message.text}</p>
+        <p className={`msg ${isSender ? 'bg-indigo-500' : 'bg-purple-400'}`}>{message.text}</p>
         <UserAvatar isSender={isSender} className={`${isSender ? 'order-last ml-1' : 'mr-1'}`} />
       </div>
     );

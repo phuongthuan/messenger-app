@@ -3,7 +3,7 @@ import { Message, User } from 'types/api';
 import axios from 'axios';
 
 import useFetchMessage from 'hooks/useFetchMessages';
-import useEventListener from 'hooks/useEventListener';
+import useScrollEventListener from 'hooks/useScrollEventListener';
 
 import SendIcon from './SendIcon';
 import SingleMessage from './SingleMessage';
@@ -18,7 +18,7 @@ export interface ChatBoxProps {
 
 function ChatBox({ accountId, conversationId, participants }: ChatBoxProps) {
   const [text, setText] = React.useState<string>('');
-  const [pageSize, setPageSize] = React.useState(10);
+  const [pageSize, setPageSize] = React.useState(20);
 
   const scrollMessageRef = React.useRef<HTMLDivElement>(null);
   const lastMessageRef = React.useRef<HTMLDivElement>(null);
@@ -34,7 +34,7 @@ function ChatBox({ accountId, conversationId, participants }: ChatBoxProps) {
   );
 
   // Scroll to top to get older message
-  useEventListener('scroll', () => {
+  useScrollEventListener(() => {
     if (window.scrollY == 0) {
       handleLoadMore();
     }
@@ -77,7 +77,7 @@ function ChatBox({ accountId, conversationId, participants }: ChatBoxProps) {
 
   return (
     <div className="relative flex flex-col justify-between z-50">
-      <div className="fixed w-2/3 text-center z-10 flex flex-col items-center">
+      <div className="fixed w-full sm:w-2/3 md:w-2/3 text-center z-10 flex flex-col items-center">
         <div className="bg-violet-200 w-full flex items-center h-12">
           <p className="flex gap-x-1 mx-2">
             <UserAvatar isSender />
@@ -93,9 +93,12 @@ function ChatBox({ accountId, conversationId, participants }: ChatBoxProps) {
         </div>
         {isLoading ? <Spinner className="mt-4" /> : null}
         {isError && <p className="text-sm text-red-500">Load message failed</p>}
+        {!hasMore && !isLoading && (
+          <p className="text-sm py-2 bg-white z-10 w-full text-indigo-500">No more messages to load</p>
+        )}
       </div>
 
-      <div className="flex flex-col overflow-y-auto gap-y-4 mb-20 z-0 text-center mt-16 p-4">
+      <div className="flex flex-col overflow-y-auto gap-y-4 mb-20 z-0 text-center mt-20 p-4">
         {messages.map((message: Message, index: number) => (
           <React.Fragment key={message.id}>
             <SingleMessage
@@ -110,10 +113,10 @@ function ChatBox({ accountId, conversationId, participants }: ChatBoxProps) {
         <div ref={lastMessageRef} />
       </div>
 
-      <form className="fixed w-2/3 bottom-0 bg-slate-200 p-4 z-10" onSubmit={handleSubmit}>
+      <form className="fixed w-full sm:w-2/3 md:w-2/3 bottom-0 bg-slate-200 p-4 z-10" onSubmit={handleSubmit}>
         <input
           name="text-input"
-          className="border-2 rounded-full px-4 py-1 border-indigo-500 focus:border-indigo-500 focus:outline-none text-sm w-full"
+          className="border-2 rounded-full px-4 py-1 border-gray-300 focus:border-indigo-500 focus:outline-none text-sm w-full"
           type="text"
           placeholder="type your messages"
           onChange={handleChange}

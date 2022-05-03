@@ -6,6 +6,7 @@ type AccountProps = {
   id: number;
   name: string;
 };
+
 const Home: NextPage<{ accounts: AccountProps[] }> = ({ accounts }) => {
   const router = useRouter();
   const handleClick = (id: number) => router.push(`/account/${id}`);

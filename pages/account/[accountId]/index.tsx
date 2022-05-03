@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { getLayout } from '../../../components/SidebarLayout';
+import { getLayout } from 'components/SidebarLayout';
 
 const Account = () => {
   return <div>Loading ...</div>;

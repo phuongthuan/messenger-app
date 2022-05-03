@@ -48,11 +48,11 @@ const SearchBar: React.FC<{ value: string; setValue: (value: string) => void }> 
           font-normal
           text-gray-700
           bg-white bg-clip-padding
-          border border-solid border-gray-300
+          border-2 border-solid border-gray-300
           transition
           ease-in-out
           m-0
-          focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none
+          focus:text-gray-700 focus:bg-white focus:border-indigo-500 focus:outline-none
         "
         id="search-bar"
         placeholder="Search"
@@ -73,8 +73,8 @@ const Conversation: React.FC<{ conversation: Conversation }> = ({ conversation }
 
   return (
     <div
-      className={`border-solid flex gap-2 items-end rounded-lg p-2 border-2 border-indigo-600 ${
-        conversation.id === conversationId ? 'bg-violet-300' : ''
+      className={`border-solid flex gap-2 items-end rounded-lg p-2 border-2 border-indigo-500 ${
+        conversation.id === conversationId ? 'bg-violet-200' : ''
       }`}
     >
       <div className="place-self-center">
@@ -136,11 +136,11 @@ const SidebarLayout: React.FC<{ children: React.ReactElement }> = ({ children })
   }, [data, accountId, router, conversationId]);
 
   return accountId && conversationId ? (
-    <div className="h-screen w-screen flex flex-row flex-wrap relative">
-      <aside className="h-full w-1/3 sm:w-1/3 md:w-1/3 border border-solid border-gray-300">
+    <div className="h-screen w-screen flex flex-wrap flex-row relative">
+      <aside className="h-full hidden w-full sm:inline-block sm:w-1/3 md:w-1/3 sm:fixed border border-solid border-gray-300">
         <Sidebar conversations={data?.rows ?? []} />
       </aside>
-      <main role="main" className="relative right-0 w-2/3 sm:w-2/3 md:w-2/3">
+      <main role="main" className="absolute right-0 w-full sm:w-2/3 md:w-2/3">
         {children}
       </main>
     </div>
