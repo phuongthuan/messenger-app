@@ -1,5 +1,7 @@
 # messenger-api
 
+Principles and Design Patterns of React Programming - batch01 - Tháng 4, 2022 - Team 10
+
 ## Getting started
 
 Requirements: Node.js version 16+
@@ -179,7 +181,7 @@ const { data, mutate } = useSWR(`/api/1/conversation/5/messages?pageSize=10`, fe
 // received newer messages
 mutate({
   rows: [...newData.rows, ...data.rows],
-  sort: "NEWEST_FIRST",
+  sort: 'NEWEST_FIRST',
   cursor_next: newData.cursor_next,
   cursor_prev: data.cursor_prev,
 });
@@ -187,7 +189,7 @@ mutate({
 // received older messages
 mutate({
   rows: [...data.rows, [...newData.rows].reverse()],
-  sort: "NEWEST_FIRST",
+  sort: 'NEWEST_FIRST',
   cursor_next: data.cursor_next,
   cursor_prev: newData.cursor_next,
 });
